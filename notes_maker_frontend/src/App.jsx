@@ -151,6 +151,14 @@ export default function App() {
     return () => window.speechSynthesis?.cancel()
   }, [])
 
+  // Keep Render alive — ping every 10 minutes to prevent spin-down
+  useEffect(() => {
+    const ping = () => fetch(`${API_BASE}/`).catch(() => {})
+    ping()
+    const id = setInterval(ping, 10 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [])
+
   const ui = getUI(language)
 
   function handleFileChange(e) {
