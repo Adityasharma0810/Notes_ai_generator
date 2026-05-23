@@ -1,5 +1,8 @@
 import traceback
+import asyncio
+import os
 
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -37,3 +40,23 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.get("/")
 def home():
     return {"message": "AI Backend Running"}
+
+
+# ── Keep-alive: self-ping every 10 minutes so Render doesn't spin down ──
+RENDER_URL = os.getenv("RENDER_EXTERNAL_URL", "")
+
+@app.on_event("startup")
+async def start_keepalive():
+    if RENDER_URL:
+        asyncio.create_task(_keepalive_loop())
+
+
+async def _keepalive_loop():
+    await asyncio.sleep(60)  # wait 1 min after startup before first ping
+    async with httpx.AsyncClient() as client:
+        while True:
+            try:
+                await client.get(f"{RENDER_URL}/", timeout=10)
+            except Exception:
+                pass
+            await asyncio.sleep(10 * 60)  # ping every 10 minutes
