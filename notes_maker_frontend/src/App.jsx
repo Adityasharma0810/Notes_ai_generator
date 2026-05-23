@@ -45,7 +45,7 @@ const LANGUAGES = [
 const UI_TEXT = {
   en: {
     title: 'Shantanu', online: 'Online',
-    dropText: 'Drop your files here or', browse: 'browse',
+    dropText: 'Hi i am adwika feed me your data =]', browse: 'browse',
     dropHint: 'Supports PDF, PPTX, PNG, JPG',
     addMore: '+ Add more',
     modeLabel: 'What type of notes do you want?',
