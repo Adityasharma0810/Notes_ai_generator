@@ -1,10 +1,11 @@
 import os
+import io
 import base64
 import logging
 
 import pdfplumber
+import requests
 from PIL import Image
-from groq import Groq
 from dotenv import load_dotenv
 
 from app.services.ppt_service import extract_ppt_text
@@ -12,66 +13,47 @@ from app.services.ppt_service import extract_ppt_text
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-# Load first available Groq key for vision
-_GROQ_KEYS = [
-    os.getenv("GROQ_API_KEY_1", ""),
-    os.getenv("GROQ_API_KEY_2", ""),
-    os.getenv("GROQ_API_KEY_3", ""),
-    os.getenv("GROQ_API_KEY", ""),
-]
-_GROQ_KEYS = [k.strip() for k in _GROQ_KEYS if k.strip()]
-
-VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+OCR_SPACE_API_KEY = os.getenv("OCR_SPACE_API_KEY", "")
+OCR_SPACE_URL = "https://api.ocr.space/parse/image"
 
 
 def _image_to_base64(image: Image.Image) -> str:
-    """Convert PIL image to base64 JPEG string."""
-    import io
     buf = io.BytesIO()
     image.convert("RGB").save(buf, format="JPEG", quality=85)
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
-def _groq_vision_ocr(image: Image.Image, key: str) -> str:
-    """Use Groq vision model to extract text from an image."""
-    client = Groq(api_key=key)
-    b64 = _image_to_base64(image)
-    response = client.chat.completions.create(
-        model=VISION_MODEL,
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
-                },
-                {
-                    "type": "text",
-                    "text": (
-                        "Extract ALL text from this image exactly as written. "
-                        "Preserve structure, headings, bullet points, and formulas. "
-                        "Output only the extracted text, nothing else."
-                    )
-                }
-            ]
-        }],
-        max_tokens=2048,
-    )
-    return response.choices[0].message.content.strip()
+def _ocr_space_image(image: Image.Image) -> str:
+    """Send image to OCR.space and return extracted text."""
+    try:
+        b64 = _image_to_base64(image)
+        payload = {
+            "base64Image": f"data:image/jpeg;base64,{b64}",
+            "apikey": OCR_SPACE_API_KEY,
+            "language": "eng",
+            "isOverlayRequired": False,
+            "detectOrientation": True,
+            "scale": True,
+            "OCREngine": 2,  # Engine 2 is better for printed text
+        }
+        response = requests.post(OCR_SPACE_URL, data=payload, timeout=30)
+        response.raise_for_status()
+        result = response.json()
+
+        if result.get("IsErroredOnProcessing"):
+            logger.warning(f"OCR.space error: {result.get('ErrorMessage')}")
+            return ""
+
+        parsed = result.get("ParsedResults", [])
+        return "\n".join(p.get("ParsedText", "") for p in parsed).strip()
+
+    except Exception as e:
+        logger.warning(f"OCR.space failed: {e}")
+        return ""
 
 
-def _ocr_image_with_groq(image: Image.Image) -> str:
-    """Try each Groq key for vision OCR."""
-    for key in _GROQ_KEYS:
-        try:
-            return _groq_vision_ocr(image, key)
-        except Exception as e:
-            logger.warning(f"Groq vision OCR failed with key: {e}")
-    return ""
-
-
-def _ocr_pdf_with_groq(file_path: str) -> str:
-    """Render each PDF page as image and OCR with Groq vision."""
+def _ocr_pdf(file_path: str) -> str:
+    """Render each PDF page as image and OCR with OCR.space."""
     text = ""
     try:
         import pypdfium2 as pdfium
@@ -80,7 +62,7 @@ def _ocr_pdf_with_groq(file_path: str) -> str:
             try:
                 bitmap = page.render(scale=150 / 72)
                 pil_image = bitmap.to_pil()
-                page_text = _ocr_image_with_groq(pil_image)
+                page_text = _ocr_space_image(pil_image)
                 if page_text:
                     text += f"\n--- Page {i+1} ---\n{page_text}\n"
             except Exception as e:
@@ -103,10 +85,10 @@ def process_file(file_path: str) -> str:
                 if extracted:
                     text += extracted + "\n"
 
-        # If nothing extracted, it's a scanned PDF — use Groq vision OCR
+        # If nothing extracted, it's a scanned PDF — use OCR.space
         if not text.strip():
-            logger.info(f"No text in PDF, using Groq vision OCR: {file_path}")
-            text = _ocr_pdf_with_groq(file_path)
+            logger.info(f"No text in PDF, using OCR.space: {file_path}")
+            text = _ocr_pdf(file_path)
 
         return text
 
@@ -114,8 +96,7 @@ def process_file(file_path: str) -> str:
         return extract_ppt_text(file_path)
 
     elif ext in (".png", ".jpg", ".jpeg"):
-        # Use Groq vision for image OCR
         image = Image.open(file_path)
-        return _ocr_image_with_groq(image)
+        return _ocr_space_image(image)
 
     return ""
