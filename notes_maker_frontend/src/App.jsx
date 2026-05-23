@@ -349,17 +349,23 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <div className="footer-main">{ui.footer}</div>
-        <div className="footer-links">
-          <span>📚 More Notes:</span>
-          <a href="https://www.notego.in/" target="_blank" rel="noopener noreferrer">
-            🗒️ NoteGo
-          </a>
-          <span>·</span>
-          <a href="https://exnote.vercel.app/" target="_blank" rel="noopener noreferrer">
-            ✏️ ExNote
-          </a>
+        {/* Khoria promo banner */}
+        <div className="promo-banner">
+          <span className="promo-avatar">🧑‍🏫</span>
+          <div className="promo-text">
+            <span className="promo-name">Khoria says:</span>
+            <span className="promo-msg">👉 Go to these websites for more amazing notes!</span>
+          </div>
+          <div className="promo-links">
+            <a href="https://www.notego.in/" target="_blank" rel="noopener noreferrer" className="promo-link">
+              🗒️ NoteGo
+            </a>
+            <a href="https://exnote.vercel.app/" target="_blank" rel="noopener noreferrer" className="promo-link">
+              ✏️ ExNote
+            </a>
+          </div>
         </div>
+        <div className="footer-main">{ui.footer}</div>
       </footer>
     </div>
   )
