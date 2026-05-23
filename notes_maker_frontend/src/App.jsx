@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
@@ -108,7 +108,35 @@ export default function App() {
   const [quote] = useState(
     () => SHANTANU_QUOTES[Math.floor(Math.random() * SHANTANU_QUOTES.length)]
   )
-  const audioRefs = useRef({})
+  const [speaking, setSpeaking] = useState({})
+
+  // Map language codes to BCP-47 for Web Speech API
+  const LANG_BCP47 = {
+    en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', gu: 'gu-IN',
+    kn: 'kn-IN', ml: 'ml-IN', mr: 'mr-IN', od: 'or-IN',
+    pa: 'pa-IN', ta: 'ta-IN', te: 'te-IN',
+  }
+
+  function speakText(text, lang, index) {
+    if (!window.speechSynthesis) return
+    if (speaking[index]) {
+      window.speechSynthesis.cancel()
+      setSpeaking(s => ({ ...s, [index]: false }))
+      return
+    }
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text.slice(0, 3000))
+    utterance.lang = LANG_BCP47[lang] || 'en-IN'
+    utterance.rate = 0.9
+    utterance.onend = () => setSpeaking(s => ({ ...s, [index]: false }))
+    utterance.onerror = () => setSpeaking(s => ({ ...s, [index]: false }))
+    setSpeaking(s => ({ ...s, [index]: true }))
+    window.speechSynthesis.speak(utterance)
+  }
+
+  useEffect(() => {
+    return () => window.speechSynthesis?.cancel()
+  }, [])
 
   const ui = getUI(language)
 
@@ -278,17 +306,16 @@ export default function App() {
                         {ui.downloadPdf}
                       </button>
                     )}
+                    {r.notes && (
+                      <button
+                        className={`audio-btn ${speaking[i] ? 'speaking' : ''}`}
+                        onClick={() => speakText(r.notes, r.language || language, i)}
+                      >
+                        {speaking[i] ? '⏹ Stop' : ui.listenAudio}
+                      </button>
+                    )}
                     {r.audio_url && (
-                      <>
-                        <button className="audio-btn" onClick={() => playAudio(r.audio_url, i)}>
-                          {ui.listenAudio}
-                        </button>
-                        <audio
-                          ref={(el) => { audioRefs.current[i] = el }}
-                          src={`${API_BASE}${r.audio_url}`}
-                          style={{ display: 'none' }}
-                        />
-                      </>
+                      <audio src={`${API_BASE}${r.audio_url}`} controls style={{ height: '32px' }} />
                     )}
                   </div>
                 </div>

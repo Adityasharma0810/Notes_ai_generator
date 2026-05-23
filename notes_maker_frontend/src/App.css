@@ -392,6 +392,16 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
+.audio-btn.speaking {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 .result-warning {
   padding: 12px 20px;
   color: #fbbf24;
