@@ -57,7 +57,7 @@ def _call_groq(api_key: str, prompt: str, model: str) -> str:
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=4096,
+        max_tokens=2048,
         temperature=0.3,
     )
     return response.choices[0].message.content

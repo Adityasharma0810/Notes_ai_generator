@@ -116,7 +116,7 @@ async def generate_notes_route(
             continue
 
         # Generate notes in English via Groq
-        chunks = chunk_text(extracted_text, chunk_size=3000)
+        chunks = chunk_text(extracted_text, chunk_size=1500)
         combined_notes = ""
         try:
             for chunk in chunks:
