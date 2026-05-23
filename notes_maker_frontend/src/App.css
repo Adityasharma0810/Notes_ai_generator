@@ -431,4 +431,31 @@
   font-size: 13px;
   color: #4b5563;
   border-top: 1px solid #1e1e30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-main {
+  color: #4b5563;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #6b7280;
+}
+
+.footer-links a {
+  color: #a78bfa;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: #c4b5fd;
+  text-decoration: underline;
 }

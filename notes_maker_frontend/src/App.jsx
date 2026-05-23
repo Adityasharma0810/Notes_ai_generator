@@ -348,7 +348,19 @@ export default function App() {
         )}
       </main>
 
-      <footer className="footer">{ui.footer}</footer>
+      <footer className="footer">
+        <div className="footer-main">{ui.footer}</div>
+        <div className="footer-links">
+          <span>📚 More Notes:</span>
+          <a href="https://www.notego.in/" target="_blank" rel="noopener noreferrer">
+            🗒️ NoteGo
+          </a>
+          <span>·</span>
+          <a href="https://exnote.vercel.app/" target="_blank" rel="noopener noreferrer">
+            ✏️ ExNote
+          </a>
+        </div>
+      </footer>
     </div>
   )
 }
