@@ -14,6 +14,19 @@ const SHANTANU_QUOTES = [
   "Knapsack problem? My life is a knapsack problem 🎒",
 ]
 
+const KHORIA_QUOTES = [
+  "Are you a PDF? Because I want to extract everything from you 😏",
+  "Is your name Google? Because you have everything I've been searching for 🔍",
+  "Do you have a map? I keep getting lost in your eyes 🗺️",
+  "Are you a compiler? Because you make my heart run without errors ❤️",
+  "I must be a recursive function, because I keep coming back to you 🔄",
+  "You must be a keyboard shortcut, because you make everything easier 💻",
+  "Are you Wi-Fi? Because I'm feeling a connection 📶",
+  "You're like a good algorithm — efficient, elegant, and hard to forget 🧠",
+  "Is your name Stack? Because I can't pop you out of my mind 📚",
+  "You must be a bug, because I can't stop thinking about you 🐛",
+]
+
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
@@ -104,7 +117,9 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState(null)
   const [error, setError] = useState(null)
-  const [dragOver, setDragOver] = useState(false)
+  const [khoriaQuote] = useState(
+    () => KHORIA_QUOTES[Math.floor(Math.random() * KHORIA_QUOTES.length)]
+  )
   const [quote] = useState(
     () => SHANTANU_QUOTES[Math.floor(Math.random() * SHANTANU_QUOTES.length)]
   )
@@ -354,6 +369,7 @@ export default function App() {
           <span className="promo-avatar">🧑‍🏫</span>
           <div className="promo-text">
             <span className="promo-name">Khoria says:</span>
+            <span className="promo-flirt">"{khoriaQuote}"</span>
             <span className="promo-msg">👉 Go to these websites for more amazing notes!</span>
           </div>
           <div className="promo-links">
