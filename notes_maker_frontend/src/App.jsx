@@ -117,6 +117,19 @@ export default function App() {
     pa: 'pa-IN', ta: 'ta-IN', te: 'te-IN',
   }
 
+  function cleanForSpeech(text) {
+    return text
+      .replace(/#{1,6}\s*/g, '')        // remove ## headings
+      .replace(/\*\*(.+?)\*\*/g, '$1')  // **bold** -> bold
+      .replace(/\*(.+?)\*/g, '$1')      // *italic* -> italic
+      .replace(/^[-*]\s+/gm, '')        // bullet points
+      .replace(/^\d+\.\s+/gm, '')       // numbered lists
+      .replace(/`(.+?)`/g, '$1')        // inline code
+      .replace(/_{1,2}(.+?)_{1,2}/g, '$1') // __underline__
+      .replace(/\n{3,}/g, '\n\n')       // excess newlines
+      .trim()
+  }
+
   function speakText(text, lang, index) {
     if (!window.speechSynthesis) return
     if (speaking[index]) {
@@ -125,7 +138,7 @@ export default function App() {
       return
     }
     window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text.slice(0, 3000))
+    const utterance = new SpeechSynthesisUtterance(cleanForSpeech(text).slice(0, 3000))
     utterance.lang = LANG_BCP47[lang] || 'en-IN'
     utterance.rate = 0.9
     utterance.onend = () => setSpeaking(s => ({ ...s, [index]: false }))
