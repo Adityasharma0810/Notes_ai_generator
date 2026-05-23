@@ -120,6 +120,7 @@ export default function App() {
   const [khoriaQuote] = useState(
     () => KHORIA_QUOTES[Math.floor(Math.random() * KHORIA_QUOTES.length)]
   )
+  const [dragOver, setDragOver] = useState(false)
   const [quote] = useState(
     () => SHANTANU_QUOTES[Math.floor(Math.random() * SHANTANU_QUOTES.length)]
   )
