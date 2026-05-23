@@ -1,4 +1,5 @@
 import os
+import subprocess
 from typing import List
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
@@ -28,6 +29,17 @@ ALLOWED_EXTENSIONS = {".pdf", ".pptx", ".png", ".jpg", ".jpeg"}
 def get_languages():
     """Return supported languages."""
     return {"languages": SUPPORTED_LANGUAGES}
+
+
+@router.get("/health")
+def health():
+    """Check system dependencies."""
+    try:
+        result = subprocess.run(["tesseract", "--version"], capture_output=True, text=True)
+        tesseract = result.stdout.split("\n")[0] if result.returncode == 0 else "not found"
+    except Exception:
+        tesseract = "not found"
+    return {"status": "ok", "tesseract": tesseract}
 
 
 @router.post(
