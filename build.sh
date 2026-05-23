@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# Install system dependencies
-apt-get update -y
-apt-get install -y tesseract-ocr
-
-# Install Python dependencies
+# Render's Ubuntu image already has tesseract-ocr pre-installed
+# Just install Python dependencies
 pip install -r requirements.txt
